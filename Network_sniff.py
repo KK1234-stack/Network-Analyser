@@ -28,7 +28,7 @@ def main():
         print(Tab1 + 'Destination: {}, Source: {}, Protocol: {}'.format(dest_mac, src_mac, eth_proto))
 
         # Check if the protocol is IPv4 (0x0800)
-        if eth_proto == 8:  # IPv4
+        if eth_proto == 'IPv4:  # IPv4
             version, header_len, ttl, proto, src, target, data = ipv4_packet(data)
             print(Tab1 + 'IPv4 Packet:')
             print(Tab2 + 'Version: {}, Header Length: {}, TTL: {}'.format(version, header_len, ttl))
@@ -66,6 +66,12 @@ def main():
         else:
             print(Tab1 + 'Data: ')
             print(format_multi_line(DataTab1, data))
+
+        except KeyboardInterrupt:
+        print("\nTerminating program...")
+        conn.close()  # Close the socket
+        except Exception as e:
+        print(f"Error: {e}")
 
 
 # Unpack Ethernet frame
@@ -136,13 +142,3 @@ def format_multi_line(prefix, string, size=80):
 if __name__ == '__main__':
     main()
 
-
-
-
-^CTraceback (most recent call last):
-  File "/home/kali/Desktop/NetworkSniffer/NetworkUnpack.py", line 138, in <module>
-    main()
-  File "/home/kali/Desktop/NetworkSniffer/NetworkUnpack.py", line 25, in main
-    raw_data, addr = conn.recvfrom(65536)
-                     ^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
