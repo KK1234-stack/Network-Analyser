@@ -14,65 +14,66 @@ DataTab3 = '\t\t\t '
 DataTab4 = '\t\t\t\t '
 
 def main():
-    # Open raw socket for capturing Ethernet frames
-    interface = input("Enter the interface to sniff on: ")
-    conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
-    conn.bind((interface, 0))
+    # Prompt user to select the network interface
+    interface = input("Enter the network interface (e.g., eth0, wlan0): ").strip()
 
-    
-    
-    while True:
-        raw_data, addr = conn.recvfrom(65536)
-        dest_mac, src_mac, eth_proto, data = ethernet_frame(raw_data)
-        print('\nEthernet frame:')
-        print(Tab1 + 'Destination: {}, Source: {}, Protocol: {}'.format(dest_mac, src_mac, eth_proto))
+    try:
+        # Open raw socket for the selected interface
+        conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
+        conn.bind((interface, 0))
+        print(f"Listening on {interface}... Press Ctrl+C to stop.")
 
-        # Check if the protocol is IPv4 (0x0800)
-        if eth_proto == 'IPv4:  # IPv4
-            version, header_len, ttl, proto, src, target, data = ipv4_packet(data)
-            print(Tab1 + 'IPv4 Packet:')
-            print(Tab2 + 'Version: {}, Header Length: {}, TTL: {}'.format(version, header_len, ttl))
-            print(Tab2 + 'Protocol: {}, Source: {}, Target: {}'.format(proto, src, target))
+        while True:
+            raw_data, addr = conn.recvfrom(65536)
+            dest_mac, src_mac, eth_proto, data = ethernet_frame(raw_data)
+            print('\nEthernet frame:')
+            print(Tab1 + 'Destination: {}, Source: {}, Protocol: {}'.format(dest_mac, src_mac, eth_proto))
 
-            # Handle ICMP
-            if proto == 1:  # ICMP
-                icmp_type, code, checksum = icmp_packet(data)
-                print(Tab2 + 'ICMP Packet:')
-                print(Tab3 + 'Type: {}, Code: {}, Checksum: {}'.format(icmp_type, code, checksum))
+            # Check if the protocol is IPv4 (0x0800)
+            if eth_proto == 'IPv4':
+                version, header_len, ttl, proto, src, target, data = ipv4_packet(data)
+                print(Tab1 + 'IPv4 Packet:')
+                print(Tab2 + 'Version: {}, Header Length: {}, TTL: {}'.format(version, header_len, ttl))
+                print(Tab2 + 'Protocol: {}, Source: {}, Target: {}'.format(proto, src, target))
 
-            # Handle TCP
-            elif proto == 6:  # TCP
-                src_port, dest_port, sequence, acknowledgment, offset, flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin, data = tcp_seg(data)
-                print(Tab2 + 'TCP Segment:')
-                print(Tab3 + 'Source Port: {}, Destination Port: {}'.format(src_port, dest_port))
-                print(Tab3 + 'Sequence Number: {}, Acknowledgment: {}'.format(sequence, acknowledgment))
-                print(Tab3 + 'Offset: {}, URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}'.format(offset, flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin))
-                print(Tab3 + 'Data: ')
-                print(format_multi_line(DataTab4, data))
+                # Handle ICMP
+                if proto == 1:  # ICMP
+                    icmp_type, code, checksum = icmp_packet(data)
+                    print(Tab2 + 'ICMP Packet:')
+                    print(Tab3 + 'Type: {}, Code: {}, Checksum: {}'.format(icmp_type, code, checksum))
 
-            # Handle UDP
-            elif proto == 17:  # UDP
-                src_port, dest_port, size, data = udp_seg(data)
-                print(Tab2 + 'UDP Segment:')
-                print(Tab3 + 'Source Port: {}, Destination Port: {}, Size: {}'.format(src_port, dest_port, size))
-                print(Tab3 + 'Data: ')
-                print(format_multi_line(DataTab4, data))
+                # Handle TCP
+                elif proto == 6:  # TCP
+                    src_port, dest_port, sequence, acknowledgment, offset, flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin, data = tcp_seg(data)
+                    print(Tab2 + 'TCP Segment:')
+                    print(Tab3 + 'Source Port: {}, Destination Port: {}'.format(src_port, dest_port))
+                    print(Tab3 + 'Sequence Number: {}, Acknowledgment: {}'.format(sequence, acknowledgment))
+                    print(Tab3 + 'Offset: {}, URG: {}, ACK: {}, PSH: {}, RST: {}, SYN: {}, FIN: {}'.format(offset, flag_urg, flag_ack, flag_psh, flag_rst, flag_syn, flag_fin))
+                    print(Tab3 + 'Data: ')
+                    print(format_multi_line(DataTab4, data))
 
+                # Handle UDP
+                elif proto == 17:  # UDP
+                    src_port, dest_port, size, data = udp_seg(data)
+                    print(Tab2 + 'UDP Segment:')
+                    print(Tab3 + 'Source Port: {}, Destination Port: {}, Size: {}'.format(src_port, dest_port, size))
+                    print(Tab3 + 'Data: ')
+                    print(format_multi_line(DataTab4, data))
+
+                else:
+                    print(Tab2 + 'Unknown Protocol Data:')
+                    print(format_multi_line(DataTab3, data))
+
+            # If the Ethernet protocol is not IPv4
             else:
-                print(Tab2 + 'Unknown Protocol Data:')
-                print(format_multi_line(DataTab3, data))
-
-        # If the Ethernet protocol is not IPv4 (it could be ARP or others)
-        else:
-            print(Tab1 + 'Data: ')
-            print(format_multi_line(DataTab1, data))
-
-        except KeyboardInterrupt:
+                print(Tab1 + 'Data: ')
+                print(format_multi_line(DataTab1, data))
+    
+    except KeyboardInterrupt:
         print("\nTerminating program...")
         conn.close()  # Close the socket
-        except Exception as e:
+    except Exception as e:
         print(f"Error: {e}")
-
 
 # Unpack Ethernet frame
 def ethernet_frame(data):
@@ -93,7 +94,6 @@ def eth_protocol(proto):
     }
     return eth_protocols.get(proto, 'Unknown')
 
-
 # Unpack IPv4 packet header
 def ipv4_packet(data):
     version_header_len = data[0]
@@ -105,7 +105,6 @@ def ipv4_packet(data):
 
 def ipv4(addr):
     return '.'.join(map(str, addr))
-
 
 # Unpack ICMP packet
 def icmp_packet(data):
@@ -141,4 +140,3 @@ def format_multi_line(prefix, string, size=80):
 
 if __name__ == '__main__':
     main()
-
