@@ -15,7 +15,11 @@ DataTab4 = '\t\t\t\t '
 
 def main():
     # Open raw socket for capturing Ethernet frames
+    interface = input("Enter the interface to sniff on: ")
     conn = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(3))
+    conn.bind((interface, 0))
+
+    
     
     while True:
         raw_data, addr = conn.recvfrom(65536)
