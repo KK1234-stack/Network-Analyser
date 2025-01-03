@@ -140,3 +140,8 @@ def format_multi_line(prefix, string, size=80):
 
 if __name__ == '__main__':
     main()
+ /home/kali/Desktop/NetworkSniffer/NetworkUnpack.py
+  File "/home/kali/Desktop/NetworkSniffer/NetworkUnpack.py", line 70
+    except KeyboardInterrupt:
+    ^^^^^^
+SyntaxError: invalid syntax
