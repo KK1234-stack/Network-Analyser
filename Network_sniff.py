@@ -133,6 +133,16 @@ def format_multi_line(prefix, string, size=80):
             size -= 1
     return '\n'.join([prefix + line for line in textwrap.wrap(string, size)])
 
-
 if __name__ == '__main__':
     main()
+
+
+
+
+^CTraceback (most recent call last):
+  File "/home/kali/Desktop/NetworkSniffer/NetworkUnpack.py", line 138, in <module>
+    main()
+  File "/home/kali/Desktop/NetworkSniffer/NetworkUnpack.py", line 25, in main
+    raw_data, addr = conn.recvfrom(65536)
+                     ^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
