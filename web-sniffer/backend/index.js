@@ -30,6 +30,7 @@ const interfaces = deviceList.map((d) => ({
     description: d.description || d.name,
 }));
 
+
 // Track capture state per socket
 io.on("connection", (socket) => {
     console.log("🟢 Client connected");
