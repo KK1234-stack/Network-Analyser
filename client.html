@@ -1,0 +1,52 @@
+<!-- backend/client.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Live Packet Viewer</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #111;
+            color: #0f0;
+        }
+
+        pre {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>🟢 Connected Packets</h2>
+    <pre id="output">Connecting...</pre>
+
+    <script>
+        const output = document.getElementById("output");
+        const socket = io("http://localhost:3001");
+
+        socket.on("connect", () => {
+            output.textContent = "✅ Connected to WebSocket\n\n";
+        });
+
+        socket.on("packet", (data) => {
+            const pretty = JSON.stringify(data, null, 2);
+            output.textContent += pretty + "\n\n";
+        });
+
+        socket.on("disconnect", () => {
+            output.textContent += "\n❌ Disconnected from WebSocket\n";
+        });
+
+        socket.on("connect_error", (err) => {
+            output.textContent += `❌ Connection error: ${err.message}\n`;
+        });
+    </script>
+</body>
+
+</html>
