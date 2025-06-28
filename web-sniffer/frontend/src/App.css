@@ -1,0 +1,56 @@
+.App {
+  font-family: monospace;
+  background: #111;
+  color: #0f0;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+select,
+button {
+  margin: 5px;
+  padding: 5px;
+  background-color: #222;
+  color: #0f0;
+  border: 1px solid #0f0;
+  border-radius: 4px;
+}
+
+button:disabled {
+  color: #555;
+  border-color: #555;
+}
+
+hr {
+  margin: 20px 0;
+  border-color: #333;
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+
+.packet-list,
+.packet-chart {
+  flex: 1;
+  background: #000;
+  padding: 10px;
+  border: 1px solid #0f0;
+  border-radius: 6px;
+  overflow-y: auto;
+  min-width: 300px;
+}
+
+.packet-list ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.packet-list li {
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #0f0;
+  padding-bottom: 5px;
+}
