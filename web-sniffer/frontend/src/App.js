@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
+import ReactModal from "react-modal";
 import "./App.css";
 import {
   LineChart,
@@ -43,6 +44,27 @@ const getAppProtocol = (pkt) => {
   return appMap[port] || "";
 };
 
+function parseIPv4Header(hex) {
+  if (!hex || hex.length < 40) return [];
+
+  const bytes = hex.match(/.{2}/g).map(b => parseInt(b, 16));
+  const fields = [
+    { label: "Version", value: bytes[0] >> 4 },
+    { label: "IHL (Header Length)", value: (bytes[0] & 0x0f) * 4 + " bytes" },
+    { label: "Type of Service", value: bytes[1] },
+    { label: "Total Length", value: (bytes[2] << 8) + bytes[3] },
+    { label: "Identification", value: (bytes[4] << 8) + bytes[5] },
+    { label: "Flags", value: (bytes[6] >> 5) },
+    { label: "Fragment Offset", value: ((bytes[6] & 0x1f) << 8) + bytes[7] },
+    { label: "TTL", value: bytes[8] },
+    { label: "Protocol", value: bytes[9] },
+    { label: "Header Checksum", value: `0x${bytes[10].toString(16)}${bytes[11].toString(16)}` },
+    { label: "Source IP", value: `${bytes[12]}.${bytes[13]}.${bytes[14]}.${bytes[15]}` },
+    { label: "Destination IP", value: `${bytes[16]}.${bytes[17]}.${bytes[18]}.${bytes[19]}` },
+  ];
+  return fields;
+}
+
 
 
 
@@ -53,6 +75,9 @@ function App() {
   const [packets, setPackets] = useState([]);
   const [packetStats, setPacketStats] = useState([]);
   const packetBufferRef = useRef([]);
+  const [selectedHeaderHex, setSelectedHeaderHex] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+
 
   useEffect(() => {
     socket.on("interfaces", (data) => {
@@ -164,7 +189,16 @@ function App() {
           <h2>📦 Latest Packets</h2>
           <ul>
             {packets.map((pkt, i) => (
-              <li key={i}>
+              <li
+                key={i}
+                onClick={() => {
+                  if (pkt.rawIPHeaderHex) {
+                    setSelectedHeaderHex(pkt.rawIPHeaderHex);
+                    setModalOpen(true);
+                  }
+                }}
+                style={{ cursor: "pointer" }}
+              >
                 <strong>
                   {pkt.ipv4?.src ?? "?"} → {pkt.ipv4?.dst ?? "?"}
                 </strong>{" "}
@@ -176,10 +210,10 @@ function App() {
                 </small>
                 <br />
                 <small>
-                  App Protocol:{" "}
-                  <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
+                  App Protocol: <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
                 </small>
               </li>
+
             ))}
           </ul>
         </div>
@@ -277,6 +311,31 @@ function App() {
             </PieChart>
           </ResponsiveContainer>
         </div>
+
+        <ReactModal
+          isOpen={modalOpen}
+          onRequestClose={() => setModalOpen(false)}
+          style={{
+            content: {
+              backgroundColor: "#111",
+              color: "#0f0",
+              border: "1px solid #0f0",
+              padding: "20px",
+              maxWidth: "500px",
+              margin: "auto",
+            },
+          }}
+          ariaHideApp={false}
+        >
+          <h2>🧾 IPv4 Header</h2>
+          <ul>
+            {parseIPv4Header(selectedHeaderHex).map((field, idx) => (
+              <li key={idx}><strong>{field.label}:</strong> {field.value}</li>
+            ))}
+          </ul>
+          <button onClick={() => setModalOpen(false)} style={{ marginTop: "10px" }}>Close</button>
+        </ReactModal>
+
       </div>
 
 

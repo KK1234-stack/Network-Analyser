@@ -70,6 +70,9 @@ io.on("connection", (socket) => {
                         protocol: ip.info.protocol,
                     };
 
+                    const ipHeader = buffer.slice(eth.offset, eth.offset + ip.hdrlen);
+                    packetData.rawIPHeaderHex = ipHeader.toString("hex");
+
                     if (ip.info.protocol === PROTOCOL.IP.TCP) {
                         const tcp = decoders.TCP(buffer, ip.offset);
                         packetData.transport = {
