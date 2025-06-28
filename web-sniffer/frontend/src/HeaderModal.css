@@ -1,0 +1,57 @@
+.header-modal {
+    background-color: #111;
+    color: #0f0;
+    padding: 20px;
+    font-family: monospace;
+    border: 1px solid #0f0;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: auto;
+}
+
+.header-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cell {
+    border: 1px dashed #0f0;
+    padding: 6px 8px;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    color: #0f0;
+    font-size: 14px;
+    background-color: #1a1a1a;
+}
+
+.cell.small {
+    flex: 0 0 10%;
+    min-width: 80px;
+}
+
+.cell.medium {
+    flex: 0 0 20%;
+    min-width: 100px;
+}
+
+.cell.large {
+    flex: 0 0 30%;
+    min-width: 160px;
+}
+
+.cell.tiny {
+    flex: 0 0 8%;
+    min-width: 50px;
+}
+
+.cell.full {
+    flex: 1 0 100%;
+    min-width: 100%;
+}

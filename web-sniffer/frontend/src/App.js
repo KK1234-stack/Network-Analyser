@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import ReactModal from "react-modal";
+import HeaderModal from "./HeaderModal";
+
 import "./App.css";
 import {
   LineChart,
@@ -75,8 +77,12 @@ function App() {
   const [packets, setPackets] = useState([]);
   const [packetStats, setPacketStats] = useState([]);
   const packetBufferRef = useRef([]);
-  const [selectedHeaderHex, setSelectedHeaderHex] = useState("");
+  // const [selectedHeaderHex, setSelectedHeaderHex] = useState("");
+  // const [modalOpen, setModalOpen] = useState(false);
+
+  const [selectedHeaderHex, setSelectedHeaderHex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+
 
 
   useEffect(() => {
@@ -183,7 +189,8 @@ function App() {
 
       <hr />
 
-      <div className="main-content">
+      {/* MAIN SECTION */}
+      <div className="main-content" style={{ marginBottom: "40px" }}>
         {/* LEFT PANEL */}
         <div className="packet-list">
           <h2>📦 Latest Packets</h2>
@@ -210,10 +217,10 @@ function App() {
                 </small>
                 <br />
                 <small>
-                  App Protocol: <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
+                  App Protocol:{" "}
+                  <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
                 </small>
               </li>
-
             ))}
           </ul>
         </div>
@@ -238,36 +245,20 @@ function App() {
         </div>
       </div>
 
+
+      {/* HEADER MODAL */}
+      {modalOpen && selectedHeaderHex && (
+        <HeaderModal
+          hex={selectedHeaderHex}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+
       <hr />
 
-      {/* STATS  */}
-      <div className="packet-chart" style={{ marginTop: "20px" }}>
-        <h2>📊 Transport Layer Stats</h2>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={getTransportStats()}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="#0f0"
-              label
-            >
-              {getTransportStats().map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
+      {/* PIE CHARTS SECTION */}
       <div className="main-content">
+        {/* Transport Layer Stats */}
         <div className="packet-chart">
           <h2>📊 Transport Layer Stats</h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -282,7 +273,10 @@ function App() {
                 label
               >
                 {getTransportStats().map((entry, index) => (
-                  <Cell key={`cell-transport-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-transport-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
@@ -290,6 +284,7 @@ function App() {
           </ResponsiveContainer>
         </div>
 
+        {/* Application Layer Stats */}
         <div className="packet-chart">
           <h2>🧠 App Layer Protocols</h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -304,42 +299,19 @@ function App() {
                 label
               >
                 {getAppStats().map((entry, index) => (
-                  <Cell key={`cell-app-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-app-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend />
             </PieChart>
           </ResponsiveContainer>
         </div>
-
-        <ReactModal
-          isOpen={modalOpen}
-          onRequestClose={() => setModalOpen(false)}
-          style={{
-            content: {
-              backgroundColor: "#111",
-              color: "#0f0",
-              border: "1px solid #0f0",
-              padding: "20px",
-              maxWidth: "500px",
-              margin: "auto",
-            },
-          }}
-          ariaHideApp={false}
-        >
-          <h2>🧾 IPv4 Header</h2>
-          <ul>
-            {parseIPv4Header(selectedHeaderHex).map((field, idx) => (
-              <li key={idx}><strong>{field.label}:</strong> {field.value}</li>
-            ))}
-          </ul>
-          <button onClick={() => setModalOpen(false)} style={{ marginTop: "10px" }}>Close</button>
-        </ReactModal>
-
       </div>
 
-
-
+      {/* FOOTER */}
       <footer
         style={{
           marginTop: "40px",
@@ -352,6 +324,7 @@ function App() {
       </footer>
     </div>
   );
+
 
 }
 
