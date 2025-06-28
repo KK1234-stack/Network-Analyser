@@ -1,79 +1,109 @@
 // backend/index.js
 const Cap = require("cap").Cap;
+let packetCount = 0;
+
 const decoders = require("cap").decoders;
 const PROTOCOL = decoders.PROTOCOL;
-const os = require("os");
 const http = require("http");
 const socketIo = require("socket.io");
 
 const server = http.createServer();
 const io = socketIo(server, {
     cors: {
-        origin: "*", // Allow all for now; restrict in production
+        origin: "*", // for local dev only
     },
 });
 
 server.listen(3001, () => {
     console.log("WebSocket server running on port 3001");
 });
+setInterval(() => {
+    io.emit("packet-count", { timestamp: Date.now(), count: packetCount });
+    packetCount = 0; // reset for the next second
+}, 1000);
 
-const cap = new Cap();
+
+// List available interfaces
 const deviceList = Cap.deviceList();
-const device = deviceList.find((d) => !d.name.includes("lo"));
-const filter = "ip";
-const bufSize = 10 * 1024 * 1024;
-const buffer = Buffer.alloc(65535);
+const interfaces = deviceList.map((d) => ({
+    name: d.name,
+    description: d.description || d.name,
+}));
 
-if (!device) {
-    console.log("No valid network interface found.");
-    process.exit(1);
-}
+// Track capture state per socket
+io.on("connection", (socket) => {
+    console.log("🟢 Client connected");
+    socket.emit("interfaces", interfaces);
 
-const linkType = cap.open(device.name, filter, bufSize, buffer);
-console.log("Sniffing on device:", device.name);
+    let cap;
+    let buffer = Buffer.alloc(65535);
+    let linkType;
 
-cap.on("packet", function (nbytes, trunc) {
-    const packetData = {
-        ethernet: {},
-        ipv4: null,
-        transport: null,
-    };
+    socket.on("start-sniffing", (iface) => {
+        if (cap) return;
 
-    if (linkType === "ETHERNET") {
-        const eth = decoders.Ethernet(buffer);
-        packetData.ethernet = {
-            src: eth.info.srcmac,
-            dst: eth.info.dstmac,
-        };
+        console.log(`⚡ Starting capture on: ${iface}`);
+        cap = new Cap();
+        linkType = cap.open(iface, "ip", 10 * 1024 * 1024, buffer);
 
-        if (eth.info.type === PROTOCOL.ETHERNET.IPV4) {
-            const ip = decoders.IPV4(buffer, eth.offset);
-            packetData.ipv4 = {
-                src: ip.info.srcaddr,
-                dst: ip.info.dstaddr,
-                protocol: ip.info.protocol,
+        cap.on("packet", function (nbytes, trunc) {
+            packetCount++;
+            const packetData = {
+                ethernet: {},
+                ipv4: null,
+                transport: null,
             };
 
-            if (ip.info.protocol === PROTOCOL.IP.TCP) {
-                const tcp = decoders.TCP(buffer, ip.offset);
-                packetData.transport = {
-                    type: "TCP",
-                    srcPort: tcp.info.srcport,
-                    dstPort: tcp.info.dstport,
+            if (linkType === "ETHERNET") {
+                const eth = decoders.Ethernet(buffer);
+                packetData.ethernet = {
+                    src: eth.info.srcmac,
+                    dst: eth.info.dstmac,
                 };
+
+                if (eth.info.type === PROTOCOL.ETHERNET.IPV4) {
+                    const ip = decoders.IPV4(buffer, eth.offset);
+                    packetData.ipv4 = {
+                        src: ip.info.srcaddr,
+                        dst: ip.info.dstaddr,
+                        protocol: ip.info.protocol,
+                    };
+
+                    if (ip.info.protocol === PROTOCOL.IP.TCP) {
+                        const tcp = decoders.TCP(buffer, ip.offset);
+                        packetData.transport = {
+                            type: "TCP",
+                            srcPort: tcp.info.srcport,
+                            dstPort: tcp.info.dstport,
+                        };
+                    } else if (ip.info.protocol === PROTOCOL.IP.UDP) {
+                        const udp = decoders.UDP(buffer, ip.offset);
+                        packetData.transport = {
+                            type: "UDP",
+                            srcPort: udp.info.srcport,
+                            dstPort: udp.info.dstport,
+                        };
+                    }
+                }
             }
 
-            if (ip.info.protocol === PROTOCOL.IP.UDP) {
-                const udp = decoders.UDP(buffer, ip.offset);
-                packetData.transport = {
-                    type: "UDP",
-                    srcPort: udp.info.srcport,
-                    dstPort: udp.info.dstport,
-                };
-            }
+            socket.emit("packet", packetData);
+        });
+    });
+
+    socket.on("stop-sniffing", () => {
+        if (cap) {
+            console.log("⛔ Stopping capture.");
+            cap.close();
+            cap = null;
         }
-    }
+    });
 
-    // Emit to all connected clients
-    io.emit("packet", packetData);
+    socket.on("disconnect", () => {
+        console.log("🔴 Client disconnected");
+        if (cap) {
+            cap.close();
+            cap = null;
+        }
+    });
 });
