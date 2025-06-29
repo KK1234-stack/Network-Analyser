@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import ReactModal from "react-modal";
 import HeaderModal from "./HeaderModal";
+import TCPHeaderModal from "./TCPHeaderModal";
+
 
 import "./App.css";
 import {
@@ -77,6 +79,8 @@ function App() {
   const [packets, setPackets] = useState([]);
   const [packetStats, setPacketStats] = useState([]);
   const packetBufferRef = useRef([]);
+  const [selectedTCPHeaderHex, setSelectedTCPHeaderHex] = useState(null);
+
   // const [selectedHeaderHex, setSelectedHeaderHex] = useState("");
   // const [modalOpen, setModalOpen] = useState(false);
 
@@ -195,34 +199,37 @@ function App() {
         <div className="packet-list">
           <h2>📦 Latest Packets</h2>
           <ul>
-            {packets.map((pkt, i) => (
-              <li
-                key={i}
-                onClick={() => {
-                  if (pkt.rawIPHeaderHex) {
-                    setSelectedHeaderHex(pkt.rawIPHeaderHex);
-                    setModalOpen(true);
-                  }
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <strong>
-                  {pkt.ipv4?.src ?? "?"} → {pkt.ipv4?.dst ?? "?"}
-                </strong>{" "}
-                ({pkt.transport?.type ?? "?"} {pkt.transport?.srcPort ?? "-"} →{" "}
-                {pkt.transport?.dstPort ?? "-"})
-                <br />
-                <small>
-                  MAC: {pkt.ethernet?.src ?? "?"} → {pkt.ethernet?.dst ?? "?"}
-                </small>
-                <br />
-                <small>
-                  App Protocol:{" "}
-                  <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
-                </small>
-              </li>
-            ))}
+            {packets.map((pkt, i) => {
+              console.log("TCP HEX:", pkt.rawTCPHeaderHex); // ✅ valid now
+
+              return (
+                <li
+                  key={i}
+                  onClick={() => {
+                    if (pkt.rawIPHeaderHex) setSelectedHeaderHex(pkt.rawIPHeaderHex);
+                    if (pkt.transport?.type === "TCP" && pkt.rawTCPHeaderHex)
+                      setSelectedTCPHeaderHex(pkt.rawTCPHeaderHex);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <strong>
+                    {pkt.ipv4?.src ?? "?"} → {pkt.ipv4?.dst ?? "?"}
+                  </strong>{" "}
+                  ({pkt.transport?.type ?? "?"} {pkt.transport?.srcPort ?? "-"} →{" "}
+                  {pkt.transport?.dstPort ?? "-"})
+                  <br />
+                  <small>
+                    MAC: {pkt.ethernet?.src ?? "?"} → {pkt.ethernet?.dst ?? "?"}
+                  </small>
+                  <br />
+                  <small>
+                    App Protocol: <strong>{getAppProtocol(pkt) || "Unknown"}</strong>
+                  </small>
+                </li>
+              );
+            })}
           </ul>
+
         </div>
 
         {/* RIGHT PANEL */}
@@ -247,12 +254,28 @@ function App() {
 
 
       {/* HEADER MODAL */}
-      {modalOpen && selectedHeaderHex && (
-        <HeaderModal
-          hex={selectedHeaderHex}
-          onClose={() => setModalOpen(false)}
-        />
+      {(selectedHeaderHex || selectedTCPHeaderHex) && (
+        <div className="header-section" style={{
+          display: "flex",
+          gap: "20px",
+          justifyContent: "space-around",
+          marginBottom: "20px"
+        }}>
+          {selectedHeaderHex && (
+            <div style={{ flex: 1 }}>
+              <HeaderModal hex={selectedHeaderHex} />
+            </div>
+          )}
+          {selectedTCPHeaderHex && (
+            <div style={{ flex: 1 }}>
+              <TCPHeaderModal hex={selectedTCPHeaderHex} />
+            </div>
+          )}
+        </div>
       )}
+
+
+
 
       <hr />
 

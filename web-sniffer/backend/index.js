@@ -80,6 +80,12 @@ io.on("connection", (socket) => {
                             srcPort: tcp.info.srcport,
                             dstPort: tcp.info.dstport,
                         };
+
+                        // Extract TCP header safely
+                        const tcpHeaderLength = (buffer[ip.offset + 12] >> 4) * 4;
+                        const tcpHeader = buffer.slice(ip.offset, ip.offset + tcpHeaderLength);
+                        packetData.rawTCPHeaderHex = tcpHeader.toString("hex");
+
                     } else if (ip.info.protocol === PROTOCOL.IP.UDP) {
                         const udp = decoders.UDP(buffer, ip.offset);
                         packetData.transport = {
@@ -90,6 +96,7 @@ io.on("connection", (socket) => {
                     }
                 }
             }
+
 
             socket.emit("packet", packetData);
         });
