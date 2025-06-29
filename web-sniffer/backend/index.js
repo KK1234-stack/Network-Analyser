@@ -93,7 +93,12 @@ io.on("connection", (socket) => {
                             srcPort: udp.info.srcport,
                             dstPort: udp.info.dstport,
                         };
+
+                        // UDP header is always 8 bytes
+                        const udpHeader = buffer.slice(ip.offset, ip.offset + 8);
+                        packetData.rawUDPHeaderHex = udpHeader.toString("hex");
                     }
+
                 }
             }
 

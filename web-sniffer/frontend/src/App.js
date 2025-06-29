@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import ReactModal from "react-modal";
 import HeaderModal from "./HeaderModal";
 import TCPHeaderModal from "./TCPHeaderModal";
+import UDPHeaderModal from "./UDPHeaderModal";
 
 
 import "./App.css";
@@ -86,6 +87,8 @@ function App() {
 
   const [selectedHeaderHex, setSelectedHeaderHex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUDPHeaderHex, setSelectedUDPHeaderHex] = useState(null);
+
 
 
 
@@ -164,8 +167,6 @@ function App() {
     }));
   };
 
-
-
   return (
     <div className="App">
       <h1>🌐 Network Packet Sniffer</h1>
@@ -200,15 +201,20 @@ function App() {
           <h2>📦 Latest Packets</h2>
           <ul>
             {packets.map((pkt, i) => {
-              console.log("TCP HEX:", pkt.rawTCPHeaderHex); // ✅ valid now
-
+              console.log("TCP HEX:", pkt.rawTCPHeaderHex);
               return (
                 <li
                   key={i}
                   onClick={() => {
                     if (pkt.rawIPHeaderHex) setSelectedHeaderHex(pkt.rawIPHeaderHex);
-                    if (pkt.transport?.type === "TCP" && pkt.rawTCPHeaderHex)
+
+                    if (pkt.transport?.type === "TCP" && pkt.rawTCPHeaderHex) {
                       setSelectedTCPHeaderHex(pkt.rawTCPHeaderHex);
+                      setSelectedUDPHeaderHex(null);
+                    } else if (pkt.transport?.type === "UDP" && pkt.rawUDPHeaderHex) {
+                      setSelectedUDPHeaderHex(pkt.rawUDPHeaderHex);
+                      setSelectedTCPHeaderHex(null);
+                    }
                   }}
                   style={{ cursor: "pointer" }}
                 >
@@ -229,7 +235,6 @@ function App() {
               );
             })}
           </ul>
-
         </div>
 
         {/* RIGHT PANEL */}
@@ -252,9 +257,8 @@ function App() {
         </div>
       </div>
 
-
-      {/* HEADER MODAL */}
-      {(selectedHeaderHex || selectedTCPHeaderHex) && (
+      {/* HEADER MODALS */}
+      {(selectedHeaderHex || selectedTCPHeaderHex || selectedUDPHeaderHex) && (
         <div className="header-section" style={{
           display: "flex",
           gap: "20px",
@@ -271,11 +275,13 @@ function App() {
               <TCPHeaderModal hex={selectedTCPHeaderHex} />
             </div>
           )}
+          {selectedUDPHeaderHex && (
+            <div style={{ flex: 1 }}>
+              <UDPHeaderModal hex={selectedUDPHeaderHex} />
+            </div>
+          )}
         </div>
       )}
-
-
-
 
       <hr />
 
@@ -347,8 +353,5 @@ function App() {
       </footer>
     </div>
   );
-
-
 }
-
 export default App;
