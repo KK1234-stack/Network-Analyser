@@ -1,8 +1,7 @@
 import React from "react";
-import "./HeaderModal.css"; // Your existing styling
+import "./HeaderModal.css";
 
 const HeaderModal = ({ hex, onClose }) => {
-    // 🔧 Convert hex string to byte array
     const hexToBytes = (hex) => {
         const bytes = [];
         for (let c = 0; c < hex.length; c += 2) {
@@ -28,7 +27,10 @@ const HeaderModal = ({ hex, onClose }) => {
 
     return (
         <div className="header-modal">
-            <h2>🧾 IPv4 Header (IETF Style)</h2>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <h3>🧾 IPv4 Header</h3>
+
+            </div>
 
             <div className="header-table">
                 <div className="row">
@@ -59,13 +61,8 @@ const HeaderModal = ({ hex, onClose }) => {
                     <div className="cell full">Destination IP: {dstIP}</div>
                 </div>
             </div>
-
-            <button onClick={onClose} style={{ marginTop: "15px" }}>
-                Close
-            </button>
         </div>
     );
-
 };
 
 export default HeaderModal;

@@ -262,14 +262,76 @@ function App() {
       </div>
 
       {/* HEADER MODALS */}
-      {(selectedMACHeaderHex || selectedHeaderHex || selectedTCPHeaderHex || selectedUDPHeaderHex) && (
-        <div className="header-section" style={{ display: "flex", gap: "20px", justifyContent: "space-around", marginBottom: "20px" }}>
-          {selectedMACHeaderHex && <div style={{ flex: 1 }}><MACHeaderModal hex={selectedMACHeaderHex} /></div>}
-          {selectedHeaderHex && <div style={{ flex: 1 }}><HeaderModal hex={selectedHeaderHex} /></div>}
-          {selectedTCPHeaderHex && <div style={{ flex: 1 }}><TCPHeaderModal hex={selectedTCPHeaderHex} /></div>}
-          {selectedUDPHeaderHex && <div style={{ flex: 1 }}><UDPHeaderModal hex={selectedUDPHeaderHex} /></div>}
-        </div>
+      {(selectedHeaderHex || selectedTCPHeaderHex || selectedUDPHeaderHex || selectedMACHeaderHex) && (
+        <>
+          {/* Clear All Button */}
+          <div style={{ textAlign: "right", marginRight: "20px", marginBottom: "10px" }}>
+            <button
+              onClick={() => {
+                setSelectedHeaderHex(null);
+                setSelectedTCPHeaderHex(null);
+                setSelectedUDPHeaderHex(null);
+                setSelectedMACHeaderHex(null);
+              }}
+              style={{
+                background: "#333",
+                color: "#0f0",
+                padding: "6px 12px",
+                border: "1px solid #0f0",
+                borderRadius: "4px",
+                cursor: "pointer"
+              }}
+            >
+              🧹 Clear All Headers
+            </button>
+          </div>
+
+          {/* Header Section */}
+          <div
+            className="header-section"
+            style={{
+              display: "flex",
+              gap: "20px",
+              justifyContent: "space-around",
+              marginBottom: "20px"
+            }}
+          >
+            {selectedMACHeaderHex && (
+              <div style={{ flex: 1 }}>
+                <MACHeaderModal
+                  hex={selectedMACHeaderHex}
+                  onClose={() => setSelectedMACHeaderHex(null)}
+                />
+              </div>
+            )}
+            {selectedHeaderHex && (
+              <div style={{ flex: 1 }}>
+                <HeaderModal
+                  hex={selectedHeaderHex}
+                  onClose={() => setSelectedHeaderHex(null)}
+                />
+              </div>
+            )}
+            {selectedTCPHeaderHex && (
+              <div style={{ flex: 1 }}>
+                <TCPHeaderModal
+                  hex={selectedTCPHeaderHex}
+                  onClose={() => setSelectedTCPHeaderHex(null)}
+                />
+              </div>
+            )}
+            {selectedUDPHeaderHex && (
+              <div style={{ flex: 1 }}>
+                <UDPHeaderModal
+                  hex={selectedUDPHeaderHex}
+                  onClose={() => setSelectedUDPHeaderHex(null)}
+                />
+              </div>
+            )}
+          </div>
+        </>
       )}
+
 
 
       <hr />
