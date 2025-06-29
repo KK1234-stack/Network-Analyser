@@ -4,6 +4,7 @@ import ReactModal from "react-modal";
 import HeaderModal from "./HeaderModal";
 import TCPHeaderModal from "./TCPHeaderModal";
 import UDPHeaderModal from "./UDPHeaderModal";
+import MACHeaderModal from "./MACHeaderModal";
 
 
 import "./App.css";
@@ -88,6 +89,7 @@ function App() {
   const [selectedHeaderHex, setSelectedHeaderHex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUDPHeaderHex, setSelectedUDPHeaderHex] = useState(null);
+  const [selectedMACHeaderHex, setSelectedMACHeaderHex] = useState(null);
 
 
 
@@ -206,6 +208,8 @@ function App() {
                 <li
                   key={i}
                   onClick={() => {
+                    if (pkt.rawMACHeaderHex) setSelectedMACHeaderHex(pkt.rawMACHeaderHex);
+
                     if (pkt.rawIPHeaderHex) setSelectedHeaderHex(pkt.rawIPHeaderHex);
 
                     if (pkt.transport?.type === "TCP" && pkt.rawTCPHeaderHex) {
@@ -258,30 +262,15 @@ function App() {
       </div>
 
       {/* HEADER MODALS */}
-      {(selectedHeaderHex || selectedTCPHeaderHex || selectedUDPHeaderHex) && (
-        <div className="header-section" style={{
-          display: "flex",
-          gap: "20px",
-          justifyContent: "space-around",
-          marginBottom: "20px"
-        }}>
-          {selectedHeaderHex && (
-            <div style={{ flex: 1 }}>
-              <HeaderModal hex={selectedHeaderHex} />
-            </div>
-          )}
-          {selectedTCPHeaderHex && (
-            <div style={{ flex: 1 }}>
-              <TCPHeaderModal hex={selectedTCPHeaderHex} />
-            </div>
-          )}
-          {selectedUDPHeaderHex && (
-            <div style={{ flex: 1 }}>
-              <UDPHeaderModal hex={selectedUDPHeaderHex} />
-            </div>
-          )}
+      {(selectedMACHeaderHex || selectedHeaderHex || selectedTCPHeaderHex || selectedUDPHeaderHex) && (
+        <div className="header-section" style={{ display: "flex", gap: "20px", justifyContent: "space-around", marginBottom: "20px" }}>
+          {selectedMACHeaderHex && <div style={{ flex: 1 }}><MACHeaderModal hex={selectedMACHeaderHex} /></div>}
+          {selectedHeaderHex && <div style={{ flex: 1 }}><HeaderModal hex={selectedHeaderHex} /></div>}
+          {selectedTCPHeaderHex && <div style={{ flex: 1 }}><TCPHeaderModal hex={selectedTCPHeaderHex} /></div>}
+          {selectedUDPHeaderHex && <div style={{ flex: 1 }}><UDPHeaderModal hex={selectedUDPHeaderHex} /></div>}
         </div>
       )}
+
 
       <hr />
 

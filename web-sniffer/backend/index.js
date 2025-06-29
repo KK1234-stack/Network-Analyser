@@ -57,10 +57,15 @@ io.on("connection", (socket) => {
 
             if (linkType === "ETHERNET") {
                 const eth = decoders.Ethernet(buffer);
+                const macHeader = buffer.slice(0, eth.offset); // 14 bytes for Ethernet II
+                packetData.rawMACHeaderHex = macHeader.toString("hex");
+
                 packetData.ethernet = {
                     src: eth.info.srcmac,
                     dst: eth.info.dstmac,
+
                 };
+
 
                 if (eth.info.type === PROTOCOL.ETHERNET.IPV4) {
                     const ip = decoders.IPV4(buffer, eth.offset);
