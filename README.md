@@ -20,25 +20,25 @@ Primarily designed as a backend-focused system-level project to deepen understan
 
 ### 1️⃣ Interface & Interface Selection
 
-<img src="screenshots/interface_selection.png" width="700"/>
+<img src="web-sniffer/screenshots/interface_selection.png" width="700"/>
 
 ---
 
 ### 2️⃣ Real-Time Packet Feed + Per Second Rate
 
-<img src="screenshots/packet_feed.png" width="700"/>
+<img src="web-sniffer/screenshots/packet_feed.png" width="700"/>
 
 ---
 
 ### 3️⃣ Deep Packet Inspection View (MAC + IP + UDP)
 
-<img src="screenshots/packet_headers.png" width="700"/>
+<img src="web-sniffer/screenshots/packet_headers.png" width="700"/>
 
 ---
 
 ### 4️⃣ Protocol Distribution (Transport & Application Layer)
 
-<img src="screenshots/protocol_breakdown.png" width="700"/>
+<img src="web-sniffer/screenshots/protocol_breakdown.png" width="700"/>
 
 ---
 
